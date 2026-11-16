@@ -3,9 +3,9 @@ FROM python:3.12-slim-bookworm
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    CHROME_BIN=/usr/bin/chromium
-
-WORKDIR /app
+    PORT=7860 \
+    CHROME_BIN=/usr/bin/chromium \
+    HOME=/home/user
 
 # Install headless Chromium + Noto Sans Sinhala font for crisp server-side A4 PDF downloads
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -15,17 +15,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Set up user with UID 1000 for Hugging Face Spaces & security
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
 
-COPY . .
+WORKDIR $HOME/app
 
-RUN mkdir -p /app/data && useradd --create-home --shell /bin/bash appuser && chown -R appuser:appuser /app
-USER appuser
+COPY --chown=user:user requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
 
-EXPOSE 8795
+COPY --chown=user:user . .
+RUN mkdir -p $HOME/app/data
+
+EXPOSE 7860
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD python -c "import os, urllib.request; p=os.environ.get('PORT','8795'); urllib.request.urlopen(f'http://127.0.0.1:{p}/healthz', timeout=4)"
+  CMD python -c "import os, urllib.request; p=os.environ.get('PORT','7860'); urllib.request.urlopen(f'http://127.0.0.1:{p}/healthz', timeout=4)"
 
-CMD ["python", "fortune_server.py"]
+CMD ["python", "fortune_server.py", "--host", "0.0.0.0", "--port", "7860"]
