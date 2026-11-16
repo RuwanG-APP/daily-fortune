@@ -1,0 +1,40 @@
+{
+  "id": "/",
+  "name": "Daily Fortune — පුද්ගලික සුභ–අසුභ කාලසටහන",
+  "short_name": "Daily Fortune",
+  "description": "උපන් නැකත හා වේලාව අනුව දෛනික සුභ–අසුභ වේලා සටහන — Personal Auspicious Time Planner",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf6ee",
+  "theme_color": "#5c3718",
+  "lang": "si",
+  "categories": ["lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

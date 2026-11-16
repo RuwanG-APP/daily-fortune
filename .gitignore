@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Cloudflared & Temp Binaries
+cloudflared.exe
+test_render*.png
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# OS specific
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Customer Slips (privacy)
+data/slips/*
+!data/slips/.gitkeep

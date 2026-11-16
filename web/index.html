@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#5c3718" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Daily Fortune" />
+  <title>Daily Fortune — පුද්ගලික සුභ–අසුභ කාලසටහන</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css?v=2.2" />
+</head>
+<body>
+  <header class="app-header no-print">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <img src="/icons/icon.svg" alt="Daily Fortune" width="38" height="38" />
+        </div>
+        <div>
+          <h1 class="brand-title">Daily Fortune</h1>
+          <p class="brand-sub" data-i18n="appSubtitle">පුද්ගලික සුභ–අසුභ වේලා සටහන</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button type="button" class="user-sub-pill hidden" id="userSubPill">⏳ Trial</button>
+        <button type="button" class="install-pill" id="installAppBtn" data-i18n="btnInstallShort">📲 ඇප්</button>
+        <div class="pill-toggle" role="group" aria-label="Time format">
+          <button type="button" class="toggle-btn active" data-timefmt="12h" id="fmt12Btn">AM/PM</button>
+          <button type="button" class="toggle-btn" data-timefmt="24h" id="fmt24Btn">24h</button>
+        </div>
+        <div class="pill-toggle" role="group" aria-label="Language">
+          <button type="button" class="toggle-btn active" data-lang="si" id="langSiBtn">සිං</button>
+          <button type="button" class="toggle-btn" data-lang="en" id="langEnBtn">EN</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Top Realtime Trial / Subscription Banner -->
+  <div class="trial-banner hidden no-print" id="trialBanner">
+    <div class="trial-banner-inner">
+      <span class="trial-msg" id="trialBannerMsg">⏳ ඔබගේ නොමිලේ අත්හදාබැලීමේ කාලය අවසන් වීමට තව පැය 24 ක් ඇත.</span>
+      <button type="button" class="btn-upgrade-banner" id="bannerUpgradeBtn">⚡ සම්පූර්ණ පහසුකම් ලබාගන්න (රු. <span id="bannerPrice">1,490</span>/=)</button>
+    </div>
+  </div>
+
+  <main class="container">
+    <div class="offline-banner hidden no-print" id="offlineBanner">
+      <span id="offlineBannerTxt" data-i18n="offlineNotice">📡 සර්වර් සම්බන්ධතාවය ඇනහිට ඇත — අවසන් වරට සුරැකි කාලසටහන පෙන්වයි.</span>
+      <button type="button" class="btn-retry-offline" id="btnRetryOffline" data-i18n="btnRetry">🔄 නැවත සම්බන්ධ වන්න</button>
+    </div>
+    <!-- Saved Profiles Bar -->
+    <section class="saved-bar no-print" id="savedBar">
+      <div class="saved-head">
+        <span class="saved-label" data-i18n="savedProfiles">සුරැකි පැතිකඩ:</span>
+        <button type="button" class="btn-link" id="newProfileBtn" data-i18n="newPerson">+ නව අයෙක්</button>
+      </div>
+      <div class="saved-chips" id="savedChips"></div>
+    </section>
+
+    <!-- Input Card -->
+    <section class="card form-card no-print" id="formCard">
+      <form id="fortuneForm" novalidate>
+        <div class="section-title-row">
+          <h2 class="section-title" data-i18n="stepBirth">1. උපන් විස්තර ඇතුළත් කරන්න</h2>
+          <button type="button" class="btn-collapse hidden" id="collapseFormBtn" data-i18n="hideForm">හකුලන්න ▲</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="fName" data-i18n="lblName">නම (Name)</label>
+            <input type="text" id="fName" placeholder="උදා: රුවන් පෙරේරා" required />
+          </div>
+          <div class="field bdate-container">
+            <div class="bdate-label-row">
+              <label data-i18n="lblBirthDate">උපන් දිනය</label>
+              <div class="bdate-tools">
+                <button type="button" class="btn-bdate-mode" id="btnToggleDateMode" title="ටයිප් කිරීමට මාරු වන්න" aria-label="Toggle Input Mode">⌨️ Type</button>
+                <button type="button" class="btn-cal-toggle" id="btnCalToggle" title="දින දර්ශනය (Calendar)" aria-label="දින දර්ශනය">📅</button>
+              </div>
+            </div>
+            <div class="bdate-triplet" id="bDateTriplet">
+              <div class="bdate-col">
+                <select id="bYear" title="උපන් වර්ෂය" required>
+                  <option value="" data-i18n="selectYear">වර්ෂය</option>
+                </select>
+              </div>
+              <div class="bdate-col">
+                <select id="bMonth" title="උපන් මාසය" required>
+                  <option value="" data-i18n="selectMonth">මාසය</option>
+                </select>
+              </div>
+              <div class="bdate-col">
+                <select id="bDay" title="උපන් දිනය" required>
+                  <option value="" data-i18n="selectDay">දිනය</option>
+                </select>
+              </div>
+            </div>
+            <div class="bdate-direct-wrap hidden" id="bDateDirectWrap">
+              <input type="text" id="bDateDirectInput" inputmode="numeric" placeholder="YYYY-MM-DD (උදා: 1985-08-04)" pattern="\d{4}-\d{2}-\d{2}" />
+            </div>
+            <input type="date" id="fBirthDate" class="hidden-native-date" tabindex="-1" aria-hidden="true" required />
+            <div class="bdate-preview" id="bDatePreview">
+              <span class="bdate-icon">📅</span>
+              <span class="bdate-txt" id="bDatePreviewTxt" data-i18n="bDatePrompt">වර්ෂය, මාසය හා දිනය තෝරන්න</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label for="fBirthTime" data-i18n="lblBirthTime">උපන් වේලාව</label>
+            <input type="time" id="fBirthTime" value="06:00" />
+            <small class="hint" data-i18n="hintBirthTime">නොදනී නම් හිස්ව තබා පහතින් නැකත තෝරන්න</small>
+          </div>
+          <div class="field">
+            <label for="fBirthDistrict" data-i18n="lblDistrict">උපන් දිස්ත්‍රික්කය</label>
+            <select id="fBirthDistrict"></select>
+          </div>
+          <div class="field">
+            <label for="fBirthCity" data-i18n="lblCity">උපන් නගරය</label>
+            <select id="fBirthCity"></select>
+          </div>
+        </div>
+
+        <div class="city-hint-box">
+          <span class="city-hint-icon">📌</span>
+          <span data-i18n="lblCityHint">ඔබගේ ගම හෝ නගරය ලැයිස්තුවේ නොමැති නම්, උපතට ආසන්නතම නගරය / ප්‍රාදේශීය ලේකම් කොට්ඨාශය තෝරන්න.</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title-row">
+          <h2 class="section-title" data-i18n="stepChart">2. කේන්දර විස්තර (දන්නේ නම් පමණක් තෝරන්න)</h2>
+        </div>
+        <p class="sub-hint" data-i18n="hintAutoCalc">උපන් නැකත හෝ ලග්නය නොදන්නේ නම් "ස්වයංක්‍රීයව" ලෙසම තබන්න — උපන් දිනය හා වේලාව අනුව ක්ෂණිකව සොයා ගනී.</p>
+
+        <div class="grid-4">
+          <div class="field">
+            <label for="fNak" data-i18n="lblNak">උපන් නැකත</label>
+            <select id="fNak"></select>
+          </div>
+          <div class="field">
+            <label for="fPada" data-i18n="lblPada">නැකත් පාදය</label>
+            <select id="fPada">
+              <option value="auto" data-i18n-opt="autoDetect">ස්වයංක්‍රීයව (Auto)</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fLagna" data-i18n="lblLagna">උපන් ලග්නය</label>
+            <select id="fLagna"></select>
+          </div>
+          <div class="field">
+            <label for="fNavamsa" data-i18n="lblNavamsa">නවාංශකය</label>
+            <select id="fNavamsa"></select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title-row">
+          <h2 class="section-title" data-i18n="stepRange">3. බැලීමට අවශ්‍ය කාල පරාසය</h2>
+        </div>
+
+        <div class="preset-row" id="dayPresets">
+          <button type="button" class="chip-btn active" data-preset="today" data-i18n="preToday">අද (දින 1)</button>
+          <button type="button" class="chip-btn" data-preset="tomorrow" data-i18n="preTomorrow">හෙට (දින 1)</button>
+          <button type="button" class="chip-btn" data-preset="week" data-i18n="preWeek">සතිය (දින 7)</button>
+          <button type="button" class="chip-btn" data-preset="month" data-i18n="preMonth">මාසය (දින 30)</button>
+        </div>
+
+        <div class="grid-4">
+          <div class="field">
+            <label for="fStartDate" data-i18n="lblFromDate">ආරම්භක දිනය</label>
+            <input type="date" id="fStartDate" required />
+          </div>
+          <div class="field">
+            <label for="fEndDate" data-i18n="lblToDate">අවසන් දිනය (උපරිම 31)</label>
+            <input type="date" id="fEndDate" required />
+          </div>
+          <div class="field">
+            <label for="fFromTime" data-i18n="lblFromTime">වේලාව සිට</label>
+            <input type="time" id="fFromTime" value="06:00" />
+          </div>
+          <div class="field">
+            <label for="fToTime" data-i18n="lblToTime">දක්වා</label>
+            <input type="time" id="fToTime" value="22:00" />
+          </div>
+        </div>
+
+        <div class="hour-presets">
+          <span class="mini-label" data-i18n="quickHours">වේලා තේරීම්:</span>
+          <button type="button" class="mini-chip" data-hfrom="00:00" data-hto="23:59" data-i18n="hrFull">පැය 24 ම</button>
+          <button type="button" class="mini-chip active" data-hfrom="06:00" data-hto="22:00" data-i18n="hrDay">උදේ 6 – රෑ 10</button>
+          <button type="button" class="mini-chip" data-hfrom="08:00" data-hto="17:30" data-i18n="hrWork">වැඩ වේලාව (8–5:30)</button>
+        </div>
+
+        <details class="extra-loc">
+          <summary data-i18n="diffLocation">දැනට සිටින නගරය උපන් නගරයට වඩා වෙනස් නම් මෙතනින් තෝරන්න ▾</summary>
+          <div class="grid-2" style="margin-top:10px;">
+            <div class="field">
+              <label for="fTargetDistrict" data-i18n="lblCurDistrict">වත්මන් දිස්ත්‍රික්කය</label>
+              <select id="fTargetDistrict"></select>
+            </div>
+            <div class="field">
+              <label for="fTargetCity" data-i18n="lblCurCity">වත්මන් නගරය</label>
+              <select id="fTargetCity"></select>
+            </div>
+          </div>
+          <div class="city-hint-box" style="margin-top: 8px;">
+            <span class="city-hint-icon">📌</span>
+            <span data-i18n="lblCityHint">ඔබගේ ගම හෝ නගරය ලැයිස්තුවේ නොමැති නම්, උපතට ආසන්නතම නගරය / ප්‍රාදේශීය ලේකම් කොට්ඨාශය තෝරන්න.</span>
+          </div>
+        </details>
+
+        <div class="form-error hidden" id="formError"></div>
+
+        <div class="submit-row">
+          <label class="save-check">
+            <input type="checkbox" id="fSaveProfile" checked />
+            <span data-i18n="saveDevice">මෙම උපාංගයේ සුරකින්න (ඊළඟ වතාවේ පහසුවට)</span>
+          </label>
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span data-i18n="btnGenerate">✨ කාලසටහන සාදන්න</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Results Section -->
+    <section id="resultSection" class="hidden">
+      <!-- Print/Desktop Top Identity Summary Card -->
+      <div class="card profile-card">
+        <div class="profile-top">
+          <div>
+            <div class="cert-kicker" data-i18n="certTitle">පුද්ගලික සුභ–අසුභ කාලසටහන</div>
+            <h2 class="prof-name" id="outName">—</h2>
+          </div>
+          <div class="profile-actions no-print">
+            <button type="button" class="btn-outline" id="editBtn" data-i18n="btnEdit">✏️ වෙනස් කරන්න</button>
+          </div>
+        </div>
+
+        <div class="identity-grid" id="identityGrid">
+          <div class="id-item">
+            <span class="id-lbl" data-i18n="hdrBirthDate">උපන් දිනය</span>
+            <strong class="id-val" id="outBirthDate">—</strong>
+          </div>
+          <div class="id-item">
+            <span class="id-lbl" data-i18n="hdrLagna">ලග්නය</span>
+            <strong class="id-val" id="outLagna">—</strong>
+          </div>
+          <div class="id-item">
+            <span class="id-lbl" data-i18n="hdrNak">නැකත</span>
+            <strong class="id-val" id="outNak">—</strong>
+          </div>
+          <div class="id-item">
+            <span class="id-lbl" data-i18n="hdrNavamsa">නවාංශකය</span>
+            <strong class="id-val" id="outNavamsa">—</strong>
+          </div>
+        </div>
+
+        <div class="range-meta" id="outRangeMeta">—</div>
+      </div>
+
+      <!-- Live Right Now Banner (when Today is included) -->
+      <div class="now-banner hidden no-print" id="nowBanner">
+        <div class="now-left">
+          <span class="now-dot"></span>
+          <div>
+            <div class="now-caption" id="nowCaption">—</div>
+            <div class="now-sub" id="nowSub">—</div>
+          </div>
+        </div>
+        <div class="now-badge" id="nowBadge">—</div>
+      </div>
+
+      <!-- Legend & Table Controls -->
+      <div class="card table-card">
+        <div class="legend-strip" id="legendStrip"></div>
+
+        <div class="toolbar no-print">
+          <div class="filter-pills" id="filterPills">
+            <button type="button" class="filter-btn active" data-filter="all" data-i18n="fltAll">සියල්ල</button>
+            <button type="button" class="filter-btn" data-filter="good" data-i18n="fltGood">සුභ වේලාවන්</button>
+            <button type="button" class="filter-btn" data-filter="best" data-i18n="fltBest">ඉතා සුභ / ඉතාමත් සුභ</button>
+            <button type="button" class="filter-btn" data-filter="bad" data-i18n="fltBad">අසුභ වේලාවන්</button>
+          </div>
+          <div class="share-btns">
+            <button type="button" class="btn-soft" id="copyWhatsappBtn" data-i18n="btnCopy">📋 WhatsApp Copy</button>
+            <button type="button" class="btn-pdf" id="savePdfBtn" data-i18n="btnSavePdf">📥 PDF සේව් කරන්න</button>
+            <button type="button" class="btn-soft" id="printBtn" data-i18n="btnPrint">🖨️ Print</button>
+          </div>
+        </div>
+
+        <div class="copy-toast hidden no-print" id="copyToast" data-i18n="copiedMsg">✓ WhatsApp පණිවිඩය පිටපත් විය!</div>
+
+        <div class="table-wrap">
+          <table class="fortune-table" id="fortuneTable">
+            <thead>
+              <tr>
+                <th data-i18n="colDate">දිනය</th>
+                <th data-i18n="colFrom">වේලාව (සිට)</th>
+                <th data-i18n="colTo">දක්වා</th>
+                <th data-i18n="colStatus">තත්වය</th>
+              </tr>
+            </thead>
+            <tbody id="fortuneBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state hidden" id="emptyState" data-i18n="emptyRows">තෝරාගත් පෙරහනට ගැලපෙන වේලාවන් නොමැත.</div>
+      </div>
+    </section>
+
+    <!-- App Footer -->
+    <footer class="app-footer no-print">
+      <div class="footer-inner">
+        <span>© 2026 Daily Fortune — පුද්ගලික සුභ–අසුභ වේලා සටහන</span>
+        <a href="/admin" class="footer-admin-link">⚙️ පරිපාලක පුවරුව (Admin)</a>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Install / Connect Phone & PC App Modal -->
+  <div class="modal-backdrop hidden no-print" id="installModal" role="dialog" aria-modal="true" aria-labelledby="installModalTitle">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div class="modal-brand">
+          <img src="/icons/icon-192.png" alt="" width="44" height="44" class="modal-icon" />
+          <div>
+            <h2 id="installModalTitle" data-i18n="installTitle">Daily Fortune ඇප් එක ස්ථාපනය කරන්න</h2>
+            <p data-i18n="installSub">Phone සහ PC Home Screen එකට කෙලින්ම App එකක් ලෙස එක් කරන්න</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close" id="closeInstallModal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="native-install-box hidden" id="nativeInstallBox">
+        <button type="button" class="btn-install-now" id="triggerNativeInstall" data-i18n="installNowBtn">
+          📲 දැන්ම ඇප් එක Install කරන්න (1-Tap)
+        </button>
+      </div>
+
+      <div class="url-share-box">
+        <div class="url-label" id="urlBoxLabel" data-i18n="lanLinkLabel">දුරකථනයෙන් විවෘත කිරීමට ඇප් ලිපිනය:</div>
+        <div class="url-row">
+          <code class="url-code" id="appShareUrl">—</code>
+          <button type="button" class="btn-soft" id="copyAppUrlBtn" data-i18n="copyLinkBtn">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="qr-code-box" style="text-align:center; margin: 12px 0; padding: 10px; background:#fffdf9; border:1px solid #eadfcd; border-radius:12px;">
+        <img src="/icons/qr_code.png" alt="Scan QR code" width="160" height="160" style="border-radius:10px; border:1px solid #eadfcd;" />
+        <p style="font-size:0.78rem; font-weight:700; color:#5c3718; margin:6px 0 0 0;">📷 Phone එකෙන් QR Code එක Scan කර විවෘත කරන්න</p>
+      </div>
+
+      <div class="guide-list">
+        <div class="guide-item">
+          <strong data-i18n="guideAndroidTitle">🤖 Android දුරකථන (Chrome)</strong>
+          <p data-i18n="guideAndroidText">Online HTTPS හරහා නම් "Install App" කෙලින්ම දිස්වේ. එකම Wi-Fi මත නම් Chrome Menu (⋮) → "Add to home screen" ඔබන්න.</p>
+        </div>
+        <div class="guide-item">
+          <strong data-i18n="guideIosTitle">🍎 iPhone / iPad (Safari)</strong>
+          <p data-i18n="guideIosText">Safari වලින් මෙම ලිපිනය විවෘත කර පහළ Share (⎋) බොත්තම ඔබා "Add to Home Screen" තෝරන්න.</p>
+        </div>
+        <div class="guide-item">
+          <strong data-i18n="guidePcTitle">💻 Windows PC Desktop App</strong>
+          <p data-i18n="guidePcText">Chrome / Edge Address Bar කෙළවර ⊕ Install ඔබන්න — නැතිනම් ෆෝල්ඩරයේ Create_Windows_App_Shortcut.bat Run කරන්න.</p>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn-outline" id="closeInstallModalFoot" data-i18n="btnClose">වසන්න</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registration Modal (First visit) -->
+  <div class="modal-backdrop hidden no-print" id="regModal" role="dialog" aria-modal="true">
+    <div class="modal-card reg-card">
+      <div class="reg-head">
+        <img src="/icons/icon-192.png" alt="" width="52" height="52" />
+        <h2>Daily Fortune වෙත සාදරයෙන් පිළිගනිමු!</h2>
+        <p>පැය 24 ක නොමිලේ අත්හදාබැලීමේ කාලය (Free Trial) ක්ෂණිකව ලබාගැනීමට ඔබගේ තොරතුරු ඇතුළත් කරන්න.</p>
+      </div>
+      <form id="regForm">
+        <div class="field">
+          <label for="regName">ඔබගේ නම (Name) <span class="req">*</span></label>
+          <input type="text" id="regName" placeholder="උදා: කේ. ආර්. ගමගේ" required />
+        </div>
+        <div class="field" style="margin-top: 10px;">
+          <label for="regWhatsapp">වට්සැප් අංකය (WhatsApp Number) <span class="req">*</span></label>
+          <input type="tel" id="regWhatsapp" placeholder="උදා: 0771234567 හෝ 94771234567" required />
+          <small class="hint" style="font-size:0.75rem; color:#6c6155;">ගිණුම සක්‍රිය කිරීම් සහ පණිවිඩ සඳහා පමණක් භාවිතා වේ.</small>
+        </div>
+        <div class="field" style="margin-top: 10px;">
+          <label for="regAddress">ලිපිනය (Address) <span class="opt">(විකල්පයි / Optional)</span></label>
+          <input type="text" id="regAddress" placeholder="උදා: කොළඹ" />
+        </div>
+        <div class="field" style="margin-top: 10px;">
+          <label for="regPromoCode">ප්‍රවර්ධන කේතය (Promo Code) <span class="opt">(විකල්පයි / Optional)</span></label>
+          <input type="text" id="regPromoCode" placeholder="ප්‍රවර්ධන කේතයක් ඇත්නම් පමණක් ඇතුළත් කරන්න" />
+        </div>
+        <div class="reg-error hidden" id="regError"></div>
+        <button type="submit" class="btn-reg-submit" id="regSubmitBtn">
+          🚀 නොමිලේ අත්හදාබැලීම අරඹන්න (Start 24h Free Trial)
+        </button>
+      </form>
+      <div class="reg-footer-note">
+        🔒 ඔබගේ පෞද්ගලිකත්වය 100% ක් සුරක්ෂිත වේ.
+      </div>
+    </div>
+  </div>
+
+  <!-- Paywall / Upgrade & Payment Modal -->
+  <div class="modal-backdrop hidden no-print" id="paymentModal" role="dialog" aria-modal="true">
+    <div class="modal-card payment-card">
+      <div class="modal-head">
+        <div class="modal-brand">
+          <span class="pay-crown">👑</span>
+          <div>
+            <h2 id="payModalTitle">වාර්ෂික දායකත්වය සක්‍රිය කරගන්න</h2>
+            <p id="payModalSub">මුද්‍රණ (Print / PDF) ඇතුළු සියලුම පහසුකම් වසරක් (දින 365) සඳහා අසීමිතව</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close" id="closePaymentModal">✕</button>
+      </div>
+
+      <div class="payment-body">
+        <!-- Pricing Card -->
+        <div class="price-highlight-box">
+          <span class="price-title">වසරක සම්පූර්ණ ගාස්තුව:</span>
+          <div class="price-amount">රු. <span id="modalPayPrice">1,490</span> <span class="price-period">/ අවුරුද්දකට</span></div>
+        </div>
+
+        <!-- Bank Details -->
+        <div class="bank-box">
+          <div class="bank-header">🏦 බැංකු ගිණුම් විස්තර:</div>
+          <div class="bank-row">
+            <span class="bank-lbl">බැංකුව:</span>
+            <strong class="bank-val" id="payBankName">Commercial Bank of Ceylon</strong>
+          </div>
+          <div class="bank-row">
+            <span class="bank-lbl">ගිණුම් අංකය:</span>
+            <div class="bank-acc-wrap">
+              <strong class="bank-acc-num" id="payBankAcc">8015238548</strong>
+              <button type="button" class="btn-copy-acc" id="copyBankAccBtn">📋 Copy</button>
+            </div>
+          </div>
+          <div class="bank-row">
+            <span class="bank-lbl">ගිණුමේ නම:</span>
+            <strong class="bank-val" id="payAccName">G.C.R. Gamage</strong>
+          </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="pay-methods">
+          <!-- Method 1: Slip Upload -->
+          <div class="pay-method-card">
+            <h4>ක්‍රමය 1: රිසිට්පත මෙතනින් අප්ලෝඩ් කරන්න</h4>
+            <p class="pay-method-desc">බැංකු තැන්පතු හෝ Online Transfer රිසිට්පත තෝරා "රිසිට්පත යවන්න" ඔබන්න.</p>
+            <div class="slip-input-group">
+              <input type="file" id="slipFileInput" accept="image/*,.pdf" />
+              <button type="button" class="btn-upload-slip" id="submitSlipBtn">📤 රිසිට්පත යවන්න</button>
+            </div>
+            <div class="slip-status hidden" id="slipUploadStatus"></div>
+          </div>
+
+          <!-- Method 2: Direct WhatsApp -->
+          <div class="pay-method-card">
+            <h4>ක්‍රමය 2: WhatsApp හරහා රිසිට්පත එවන්න</h4>
+            <p class="pay-method-desc">පහත බොත්තම එබූ වහාම ඔබගේ විස්තර සහිතව WhatsApp විවෘත වේ. රිසිට්පත අපට එවන්න.</p>
+            <a href="#" target="_blank" class="btn-whatsapp-direct" id="directWhatsappBtn">
+              🟢 WhatsApp හරහා රිසිට්පත එවන්න
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn-outline" id="closePaymentModalFoot">පසුවට (Close)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8-Hour Trial Countdown Alert Modal -->
+  <div class="modal-backdrop hidden no-print" id="trialAlertModal" role="dialog" aria-modal="true">
+    <div class="modal-card alert-card">
+      <div class="alert-icon">⏳</div>
+      <h3 id="trialAlertTitle">නොමිලේ අත්හදාබැලීමේ කාලය අවසන් වෙමින් පවතී!</h3>
+      <p id="trialAlertMsg">ඔබගේ පැය 24 ක නොමිලේ අත්හදාබැලීමේ කාලය අවසන් වීමට තව පැය කිහිපයක් පමණක් ඉතිරිව ඇත. මුද්‍රණ (Print/PDF) පහසුකම ඇතුළුව අඛණ්ඩව සේවාව ලබාගැනීමට දැන්ම වාර්ෂික දායකත්වය ලබාගන්න.</p>
+      <div class="alert-actions">
+        <button type="button" class="btn-primary" id="trialAlertPayBtn" style="padding:12px; font-weight:800;">⚡ දැන්ම ගෙවීම් කරන්න</button>
+        <button type="button" class="btn-outline" id="closeTrialAlertBtn">හරි, තේරුණා</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/i18n.js?v=2.2"></script>
+  <script src="/app.js?v=2.2"></script>
+</body>
+</html>

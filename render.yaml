@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: daily-fortune-app
+    runtime: docker
+    region: singapore
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: HOST
+        value: 0.0.0.0

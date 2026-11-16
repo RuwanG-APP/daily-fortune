@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.git/
+tests/
+*.bat
+*.vbs
+*.ps1
+CLOUD_DEPLOY_GUIDE.md

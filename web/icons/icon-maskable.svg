@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="72%">
+      <stop offset="0%" stop-color="#6b3416" />
+      <stop offset="65%" stop-color="#431f0e" />
+      <stop offset="100%" stop-color="#271107" />
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="48%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <radialGradient id="coreGrad" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="45%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#d97706" />
+    </radialGradient>
+  </defs>
+
+  <!-- Full-bleed background for Android adaptive maskable safe zone & iOS -->
+  <rect x="0" y="0" width="512" height="512" fill="url(#bgGrad)" />
+
+  <!-- Centered within 72% safe area so squircle/circle masking never clips -->
+  <g transform="translate(256 256) scale(0.76) translate(-256 -256)">
+    <circle cx="256" cy="256" r="186" fill="none" stroke="url(#goldGrad)" stroke-width="5" stroke-opacity="0.72" />
+    <circle cx="256" cy="256" r="168" fill="none" stroke="#fde68a" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="6 10" />
+    <g fill="#fde68a" opacity="0.9">
+      <circle cx="256" cy="70" r="5.5" />
+      <circle cx="349" cy="95" r="4.5" />
+      <circle cx="417" cy="163" r="4.5" />
+      <circle cx="442" cy="256" r="5.5" />
+      <circle cx="417" cy="349" r="4.5" />
+      <circle cx="349" cy="417" r="4.5" />
+      <circle cx="256" cy="442" r="5.5" />
+      <circle cx="163" cy="417" r="4.5" />
+      <circle cx="95" cy="349" r="4.5" />
+      <circle cx="70" cy="256" r="5.5" />
+      <circle cx="95" cy="163" r="4.5" />
+      <circle cx="163" cy="95" r="4.5" />
+    </g>
+    <polygon points="256,120 278,234 392,256 278,278 256,392 234,278 120,256 234,234" fill="#d97706" opacity="0.88" transform="rotate(45 256 256)" />
+    <polygon points="256,88 286,226 424,256 286,286 256,424 226,286 88,256 226,226" fill="url(#goldGrad)" />
+    <circle cx="256" cy="256" r="70" fill="#3b1a0b" stroke="#fef08a" stroke-width="5" />
+    <circle cx="256" cy="256" r="52" fill="url(#coreGrad)" />
+    <circle cx="256" cy="256" r="18" fill="#ffffff" opacity="0.94" />
+  </g>
+</svg>

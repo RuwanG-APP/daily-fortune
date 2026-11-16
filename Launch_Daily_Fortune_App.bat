@@ -1,0 +1,3 @@
+@echo off
+title Launching Daily Fortune App...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0Launch_Daily_Fortune_App.ps1"

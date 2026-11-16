@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Daily Fortune — Admin Control Panel (පරිපාලක පුවරුව)</title>
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin.css" />
+</head>
+<body>
+  <!-- PIN Authentication Overlay -->
+  <div class="pin-overlay" id="pinOverlay">
+    <div class="pin-card">
+      <div class="pin-brand">
+        <img src="/icons/icon.svg" alt="" width="48" height="48" />
+        <h2>Daily Fortune Admin</h2>
+        <p>පරිපාලක පුවරුවට ඇතුළුවීමට ආරක්ෂක මුරපදය (PIN) ඇතුළත් කරන්න</p>
+      </div>
+      <form id="pinForm">
+        <div class="pin-input-group">
+          <input type="password" id="adminPinInput" maxlength="10" placeholder="••••" autofocus required />
+        </div>
+        <div class="pin-error hidden" id="pinError">වැරදි මුරපදයකි! නැවත උත්සාහ කරන්න.</div>
+        <button type="submit" class="btn-admin-primary" id="pinSubmitBtn">🔐 ඇතුල් වන්න (Login)</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Admin Dashboard -->
+  <div class="admin-layout hidden" id="adminLayout">
+    <!-- Top Header -->
+    <header class="admin-header">
+      <div class="header-inner">
+        <div class="brand">
+          <img src="/icons/icon.svg" alt="" width="36" height="36" />
+          <div>
+            <h1>Daily Fortune Admin</h1>
+            <span class="sub">පරිපාලක පාලන මැදිරිය</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a href="/" class="btn-app-link" target="_blank">🌐 User App බලන්න</a>
+          <button type="button" class="btn-logout" id="logoutBtn">🔒 Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-container">
+      <!-- Summary Stats Cards -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-data">
+            <span class="stat-lbl">මුළු පාරිභෝගිකයින්</span>
+            <strong class="stat-val" id="statTotalCust">0</strong>
+          </div>
+        </div>
+        <div class="stat-card stat-card-active">
+          <div class="stat-icon">🌟</div>
+          <div class="stat-data">
+            <span class="stat-lbl">සක්‍රිය ගිණුම් (Active)</span>
+            <strong class="stat-val" id="statActiveCust">0</strong>
+          </div>
+        </div>
+        <div class="stat-card stat-card-trial">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-data">
+            <span class="stat-lbl">පැය 24 අත්හදාබැලීම්</span>
+            <strong class="stat-val" id="statTrialCust">0</strong>
+          </div>
+        </div>
+        <div class="stat-card stat-card-slips">
+          <div class="stat-icon">🧾</div>
+          <div class="stat-data">
+            <span class="stat-lbl">පොරොත්තු රිසිට්පත්</span>
+            <strong class="stat-val" id="statPendingSlips">0</strong>
+          </div>
+        </div>
+        <div class="stat-card stat-card-revenue">
+          <div class="stat-icon">💰</div>
+          <div class="stat-data">
+            <span class="stat-lbl">මුළු ලැබුණු ආදායම</span>
+            <strong class="stat-val" id="statRevenue">රු. 0/=</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Navigation Tabs -->
+      <nav class="admin-tabs">
+        <button type="button" class="tab-btn active" data-tab="slipsTab">
+          🧾 පොරොත්තු රිසිට්පත් (<span id="tabSlipBadge">0</span>)
+        </button>
+        <button type="button" class="tab-btn" data-tab="customersTab">
+          👥 පාරිභෝගික ලැයිස්තුව
+        </button>
+        <button type="button" class="tab-btn" data-tab="settingsTab">
+          ⚙️ මිල ගණන් සහ සැකසුම්
+        </button>
+      </nav>
+
+      <!-- TAB 1: Pending Slips -->
+      <section class="tab-pane active" id="slipsTab">
+        <div class="pane-head">
+          <h2>බැංකු තැන්පතු රිසිට්පත් (Payment Slips)</h2>
+          <button type="button" class="btn-refresh" id="refreshSlipsBtn">🔄 Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>අංකය</th>
+                <th>පාරිභෝගික නම</th>
+                <th>WhatsApp අංකය</th>
+                <th>මුදල</th>
+                <th>දිනය හා වේලාව</th>
+                <th>රිසිට්පත (Slip)</th>
+                <th>ක්‍රියාමාර්ග</th>
+              </tr>
+            </thead>
+            <tbody id="slipsBody">
+              <tr><td colspan="7" class="loading-cell">ලෝඩ් වෙමින් පවතී...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 2: Customer Management -->
+      <section class="tab-pane hidden" id="customersTab">
+        <div class="pane-head">
+          <h2>ලියාපදිංචි පාරිභෝගිකයින්</h2>
+          <div class="search-bar">
+            <input type="text" id="custSearchInput" placeholder="නම, දුරකථන අංකය හෝ ලිපිනය සොයන්න..." />
+            <button type="button" class="btn-refresh" id="refreshCustBtn">🔄 Refresh</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>නම</th>
+                <th>WhatsApp</th>
+                <th>ලිපිනය</th>
+                <th>තත්වය</th>
+                <th>ඉතිරි කාලය</th>
+                <th>ලියාපදිංචි දිනය</th>
+                <th>ක්‍රියාමාර්ග</th>
+              </tr>
+            </thead>
+            <tbody id="customersBody">
+              <tr><td colspan="8" class="loading-cell">ලෝඩ් වෙමින් පවතී...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: Pricing & Bank Settings -->
+      <section class="tab-pane hidden" id="settingsTab">
+        <div class="pane-head">
+          <h2>වාර්ෂික ගාස්තු සහ බැංකු විස්තර සැකසුම්</h2>
+        </div>
+        <div class="settings-card">
+          <form id="settingsForm">
+            <div class="form-grid">
+              <div class="setting-field">
+                <label for="cfgAnnualPrice">සාමාන්‍ය වාර්ෂික ගාස්තුව (Default Annual Fee - LKR)</label>
+                <div class="input-prefix-wrap">
+                  <span class="prefix">රු.</span>
+                  <input type="number" id="cfgAnnualPrice" required min="100" max="50000" />
+                </div>
+                <small>පාරිභෝගිකයාට ඇප් එකේ සාමාන්‍යයෙන් පෙන්වන වාර්ෂික මුදල (Default: 1490)</small>
+              </div>
+
+              <div class="setting-field">
+                <label for="cfgPromoPrice">නගර ප්‍රවර්ධන ගාස්තුව (Town Promo Campaign Fee - LKR)</label>
+                <div class="input-prefix-wrap">
+                  <span class="prefix">රු.</span>
+                  <input type="number" id="cfgPromoPrice" required min="100" max="50000" />
+                </div>
+                <small>ටවුන් ප්‍රමෝෂන් වලදී විශේෂයෙන් නියම කරන වට්ටම් ගාස්තුව (Default: 1000)</small>
+              </div>
+
+              <div class="setting-field">
+                <label for="cfgBankName">බැංකුවේ නම (Bank Name)</label>
+                <input type="text" id="cfgBankName" required />
+              </div>
+
+              <div class="setting-field">
+                <label for="cfgBankAccount">ගිණුම් අංකය (Account Number)</label>
+                <input type="text" id="cfgBankAccount" required />
+              </div>
+
+              <div class="setting-field">
+                <label for="cfgAccountName">ගිණුම් හිමියාගේ නම (Account Name)</label>
+                <input type="text" id="cfgAccountName" required />
+              </div>
+
+              <div class="setting-field">
+                <label for="cfgAdminWhatsapp">පරිපාලක WhatsApp අංකය (Admin WhatsApp)</label>
+                <input type="text" id="cfgAdminWhatsapp" placeholder="94760829235" required />
+                <small>පාරිභෝගිකයාට රිසිට්පත් එවීමට දිස්වන වට්සැප් අංකය</small>
+              </div>
+
+              <div class="setting-field">
+                <label for="cfgAdminPin">පරිපාලක ආරක්ෂක මුරපදය (Admin PIN)</label>
+                <input type="password" id="cfgAdminPin" required />
+                <small>Admin Dashboard එකට ඇතුල්වීමට භාවිතා කරන PIN අංකය (Default: 0779)</small>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <button type="submit" class="btn-admin-primary" id="saveSettingsBtn">💾 සැකසුම් සුරකින්න (Save Settings)</button>
+              <span class="save-toast hidden" id="saveToast">✓ සැකසුම් සාර්ථකව සුරකින ලදී!</span>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Slip View Modal -->
+  <div class="modal-backdrop hidden" id="slipModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>රිසිට්පත පරීක්ෂා කිරීම (Bank Slip View)</h3>
+        <button type="button" class="btn-close" id="closeSlipModal">✕</button>
+      </div>
+      <div class="slip-img-wrap" id="slipImgWrap">
+        <img src="" id="slipFullImg" alt="Payment Receipt" />
+      </div>
+      <div class="modal-foot" id="slipModalFoot"></div>
+    </div>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>
